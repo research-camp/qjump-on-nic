@@ -1,8 +1,4 @@
-<h1 align="center">
-  What is Service Mesh and why do we need it?
-</h1>
-
-## Topics
+# Service Mesh Evolution in Cloud
 
 ## Links
 - https://istio.io/latest/about/service-mesh/
