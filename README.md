@@ -1,5 +1,6 @@
-# Linux OS Queue
+# QJump over NIC queue
 
-In this paper, we are going to talk about how does ```linux``` operating system manages
-memory, CPU, and network events in it's ```Queue```. This is a back step for ```Jumping Queue```
-techniques.
+In this project we are going to use Rustlang in order to reschedule linux
+network interface card processes queue. We are going to send the less important
+processes like background processes, docker containers, etc to the back of the queue
+so that our user process will get in front.
