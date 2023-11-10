@@ -1,3 +1,0 @@
-[dependencies]
-ethtool = "0.8.0"
-nice = "0.3.0"
