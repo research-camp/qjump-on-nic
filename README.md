@@ -1,61 +1,28 @@
 # QJump over NIC queue
 
-In this project we are going to use Rustlang in order to reschedule linux
-network interface card processes queue. We are going to send the less important
-processes like background processes, docker containers, etc to the back of the queue
-so that our user process will get in front.
+Moving high priority packets to the front of the network interface card (aka ```queue jumping```).
+The idea of this project comes from a paper called
+[__Queues Don’t Matter When You Can JUMP Them!__](https://www.usenix.org/conference/nsdi15/technical-sessions/presentation/grosvenor) that
+its focus is on deployable approach to controlling network interference in datacenter networks.
 
-## steps
+Our goal is to create a kernel module to perform this approach on our local system's __NIC__. In this repository
+we present this module's code-base. In the next sections we are going to describe this module by presenting 4
+steps that its taking.
 
-For creating this module, we are going to explain each of our steps in order to implement
-a complete solution for this problem.
+## step one (NIC event capturing)
 
-### step.1
+The first step is to capture packets that are inserted into NIC queues. We should capture both
+input packets and output packets.
 
-First we need to list all of the interfaces that are waiting inside of network interface card.
-After that we need to list the process ids in each interface. So the output should be something
-like this.
+## step two (event management)
 
-```rust
-struct Process {
-    id: int,
-    priority: int,
-    is_background: bool,
-    namespace: String,
-}
-```
+Next step is creating a event callback function to be called whenever we capture a packet. This callback
+function gets packet data and decides where it belongs to.
 
-### step.2
+## step three (queue reordering)
 
-After we got the processes information, we need to make queue buffers in order to sort them. What
-we are going to do is that we create a priority queue for non-background processes and one for
-background processes. Then we sort them in each queue. After that we insert them into their
-network interface.
+After callback function is called, we need to reorder our system's NIC queue.
 
-```rust
-use priority_queue::PriorityQueue;
+## step four (system logging)
 
-let mut bg_pq = PriorityQueue::new();
-let mut non_bg_pq = PriorityQueue::new();
-
-// insert processes based on their type
-
-for (item, _) in bg_pq.into_sorted_iter() {
-    // insert them in interface of nic
-}
-
-for (item, _) in non_bg_pq.into_sorted_iter() {
-    // insert them in interface of nic
-}
-```
-
-### step.3
-
-Now that we have a module which implements what we want, we need to use kernel modules
-in order to set this module into linux kernel.
-
-
-### step.4
-
-At the final stage, we need to run this kernel module everytime a new process is being added
-to nic queue.
+In the final step we log these events into a file for debugging and tracing.
