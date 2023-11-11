@@ -26,3 +26,9 @@ After callback function is called, we need to reorder our system's NIC queue.
 ## step four (system logging)
 
 In the final step we log these events into a file for debugging and tracing.
+
+## resources
+
+- [Libpcap](https://www.opensourceforu.com/2011/02/capturing-packets-c-program-libpcap/)
+- [Libpcap Linux](https://www.binarytides.com/packet-sniffer-code-c-libpcap-linux-sockets/)
+- [Packet sniffer](https://www.binarytides.com/packet-sniffer-code-c-linux/)
