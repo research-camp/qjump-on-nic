@@ -46,7 +46,7 @@ int main(int argc,char **argv) {
     pcap_lookupnet(dev, &netp, &maskp, errbuf); 
  
     /* open device for reading in promiscuous mode */
-    descr = pcap_open_live(dev, BUFSIZ, 1, -1, errbuf); 
+    descr = pcap_open_live(dev, BUFSIZ, 0, 1, errbuf); 
     if(descr == NULL) {
         printf("pcap_open_live(): %s\n", errbuf);
         exit(1);
