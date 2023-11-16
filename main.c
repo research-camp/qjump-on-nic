@@ -1,84 +1,58 @@
-#include <pcap.h> 
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <errno.h> 
-#include <sys/socket.h> 
-#include <netinet/in.h> 
-#include <arpa/inet.h> 
-#include <netinet/if_ether.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/netfilter.h>
+#include <linux/netfilter_ipv4.h>
+#include <linux/ip.h>
+#include <linux/tcp.h>
 
-void callback(u_char *arg, const struct pcap_pkthdr* pkthdr, const u_char* packet) { 
-    int i = 0; 
-    static int count = 0; 
- 
-    printf("Packet Count: %d\n", ++count);
-    printf("Recieved Packet Size: %d\n", pkthdr->len);
+static struct nf_hook_ops nfho;
 
-    printf("Payload:\n");
-    for(i = 0; i< pkthdr->len; i++) { 
-        if(isprint(packet[i]))                /* Check if the packet data is printable */
-            printf("%c ", packet[i]);          /* Print it */
-        else
-            printf(" . ", packet[i]);          /* If not print a . */
-        if((i % 16 == 0 && i != 0) || i == pkthdr->len - 1) 
-            printf("\n"); 
+unsigned int hook_func(void *priv, struct sk_buff *skb, const struct nf_hook_state *state) {
+    struct iphdr *ip_header;
+    struct tcphdr *tcp_header;
+    unsigned int data_len;
+    unsigned char *data;
+
+    if (!skb) {
+        return NF_ACCEPT;
     }
+
+    ip_header = ip_hdr(skb);
+
+    if (ip_header->protocol == IPPROTO_TCP) {
+        tcp_header = tcp_hdr(skb);
+        data_len = skb->len - sizeof(struct iphdr) - tcp_header->doff * 4;
+        data = (unsigned char *)(tcp_header) + tcp_header->doff * 4;
+
+        printk(KERN_INFO "Captured Packet - Source IP: %pI4, Destination IP: %pI4, Source Port: %d, Destination Port: %d\n",
+               &ip_header->saddr, &ip_header->daddr, ntohs(tcp_header->source), ntohs(tcp_header->dest));
+
+        if (data_len > 0) {
+            printk(KERN_INFO "Data: %.*s\n", data_len, data);
+        }
+    }
+
+    return NF_ACCEPT;
 }
 
-int main(int argc,char **argv) { 
-    int i;
-    char *dev; 
-    char errbuf[PCAP_ERRBUF_SIZE]; 
-    pcap_t* descr; 
-    const u_char *packet; 
-    struct pcap_pkthdr hdr;
-    struct ether_header *eptr;    /* net/ethernet.h */
-    struct bpf_program fp;        /* hold compiled program */
-    bpf_u_int32 maskp;            /* subnet mask */
-    bpf_u_int32 netp;             /* ip */
- 
-    if(argc != 2){
-        fprintf(stdout, "Usage: %s \"expression\"\n", argv[0]);
-      
-        return 0;
-    } 
- 
-    /* Now get a device */
-    dev = pcap_lookupdev(errbuf); 
-     
-    if(dev == NULL) {
-        fprintf(stderr, "%s\n", errbuf);
+static int __init packet_sniffer_init(void) {
+    nfho.hook = hook_func;
+    nfho.hooknum = NF_INET_POST_ROUTING;
+    nfho.pf = PF_INET;
+    nfho.priority = NF_IP_PRI_FIRST;
 
-        exit(1);
-    } 
-    
-    /* Get the network address and mask */
-    pcap_lookupnet(dev, &netp, &maskp, errbuf); 
- 
-    /* open device for reading in promiscuous mode */
-    descr = pcap_open_live(dev, BUFSIZ, 0, 1, errbuf); 
-    if(descr == NULL) {
-        printf("pcap_open_live(): %s\n", errbuf);
+    nf_register_net_hook(&init_net, &nfho);
+    printk(KERN_INFO "Packet sniffer loaded.\n");
 
-        exit(1);
-    } 
- 
-    /* Now we'll compile the filter expression*/
-    if(pcap_compile(descr, &fp, argv[1], 0, netp) == -1) {
-        fprintf(stderr, "Error calling pcap_compile\n");
-
-        exit(1);
-    } 
- 
-    /* set the filter */
-    if(pcap_setfilter(descr, &fp) == -1) {
-        fprintf(stderr, "Error setting filter\n");
-
-        exit(1);
-    } 
- 
-    /* loop for callback function */
-    pcap_loop(descr, -1, callback, NULL); 
-  
-    return 0; 
+    return 0;
 }
+
+static void __exit packet_sniffer_exit(void) {
+    nf_unregister_net_hook(&init_net, &nfho);
+    printk(KERN_INFO "Packet sniffer unloaded.\n");
+}
+
+module_init(packet_sniffer_init);
+module_exit(packet_sniffer_exit);
+
+MODULE_LICENSE("GPL");
