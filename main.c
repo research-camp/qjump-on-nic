@@ -7,16 +7,7 @@
 #include <arpa/inet.h> 
 #include <netinet/if_ether.h>
 
-void my_callback(u_char *args, const struct pcap_pkthdr* pkthdr, const u_char* packet) { 
-    static int count = 1;
-  
-    fprintf(stdout, "%3d, ", count);
-    fflush(stdout);
-  
-    count++; 
-}
-
-void another_callback(u_char *arg, const struct pcap_pkthdr* pkthdr, const u_char* packet) { 
+void callback(u_char *arg, const struct pcap_pkthdr* pkthdr, const u_char* packet) { 
     int i=0; 
     static int count=0; 
  
@@ -56,6 +47,7 @@ int main(int argc,char **argv) {
      
     if(dev == NULL) {
         fprintf(stderr, "%s\n", errbuf);
+        
         exit(1);
     } 
     
@@ -66,23 +58,26 @@ int main(int argc,char **argv) {
     descr = pcap_open_live(dev, BUFSIZ, 0, 1, errbuf); 
     if(descr == NULL) {
         printf("pcap_open_live(): %s\n", errbuf);
+
         exit(1);
     } 
  
     /* Now we'll compile the filter expression*/
     if(pcap_compile(descr, &fp, argv[1], 0, netp) == -1) {
         fprintf(stderr, "Error calling pcap_compile\n");
+
         exit(1);
     } 
  
     /* set the filter */
     if(pcap_setfilter(descr, &fp) == -1) {
         fprintf(stderr, "Error setting filter\n");
+
         exit(1);
     } 
  
     /* loop for callback function */
-    pcap_loop(descr, -1, another_callback, NULL); 
+    pcap_loop(descr, -1, callback, NULL); 
   
     return 0; 
 }
