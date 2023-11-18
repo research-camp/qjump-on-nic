@@ -1,26 +1,30 @@
 # Project
 
+## section 1
+
 This kernel module uses Netfilter hooks to intercept outgoing TCP packets and print their source and destination IP addresses, source and destination ports, and packet data.
 
 Remember, working with kernel modules requires caution. Ensure you are testing this in an appropriate environment as kernel modules can crash the system if not implemented correctly. Also, the code might need adjustments based on the kernel version and system configuration.
 
----
+## section 2
+
 To sort the NIC queue's packets based on their PIDs, you'll need to access the process ID (PID) associated with each packet and sort them accordingly. Here's an extended version of the previous code with PID sorting.
 
 This updated code includes:
 
-insert_packet function: Adds packets along with their PIDs to the packet_queue.
-compare function: Used by qsort to sort the packet queue based on PIDs.
-process_queue function: Sorts and processes the packets in the queue when it's full or at certain intervals.
+- insert_packet function: Adds packets along with their PIDs to the packet_queue.
+- compare function: Used by qsort to sort the packet queue based on PIDs.
+- process_queue function: Sorts and processes the packets in the queue when it's full or at certain intervals.
 
 This module now queues packets with their associated PIDs and sorts them based on PIDs using qsort. Then, it processes and prints the packets in PID-sorted order when the queue reaches its limit or at specific intervals (as defined in process_queue).
 
----
+## section 3
+
 To prioritize processes that are not running in the background, you'll need to modify the logic to detect whether a process is in the foreground or background. In Linux, the foreground process typically has control of the terminal. You can check this by examining the session ID (sessionid) and the foreground process group ID (tgid).
 
 This code introduces the is_foreground variable, which is set to 1 if the associated process is in the foreground (i.e., not running in the background) based on its control of the terminal. The compare function then sorts the packets based on whether their associated process is in the foreground or background, with foreground processes prioritized.
 
----
+## section 4
 
 The code provided primarily runs in the top half of the Linux kernel.
 
@@ -36,49 +40,5 @@ In the case of the provided code:
 
 The Netfilter hook (hook_func) executes in response to packet processing and happens in the context of the top half.
 The packet processing, sorting, and printing of packet information occur within the context of the Netfilter hook and do not involve explicit delegation to bottom-half processing mechanisms.
+
 Keep in mind that kernel networking and packet processing happen within the context of system-level interactions and are managed by the kernel itself. Therefore, the handling of packets and associated callbacks primarily operates within the top half of the kernel, which deals with immediate processing and handling of interrupts and events.
-
-# Kernel Module Project
-
-## Overview
-This project contains a Linux kernel module that intercepts outgoing TCP packets, sorts them based on whether the associated process is in the foreground or background, and prints their information.
-
-## Files
-- **your_module.c**: Contains the implementation of the kernel module.
-- **packet_functions.h**: Header file declaring function prototypes used in the module.
-
-## Functionality
-- **hook_func**: Netfilter hook function that intercepts outgoing packets.
-- **insert_packet**: Inserts packets into a queue along with information about whether the associated process is in the foreground or background.
-- **compare**: Compares packets based on whether the associated process is in the foreground.
-- **process_queue**: Sorts and processes packets based on the foreground/background status of associated processes.
-
-## Building the Module
-To build the kernel module, use the provided Makefile:
-```bash
-make
-```
-
-Usage
-Inserting the Module:
-
-bash
-Copy code
-sudo insmod your_module_name.ko
-Removing the Module:
-
-bash
-Copy code
-sudo rmmod your_module_name
-Important Notes
-Ensure that the Linux kernel headers and build environment are properly set up.
-Be cautious when working with kernel modules, as they can affect system stability.
-Adjust paths and commands in the Makefile/CMakeLists.txt as needed for your system.
-References
-Linux Kernel Documentation
-Netfilter Documentation
-Author
-Your Name (Your Email)
-
-License
-This project is licensed under the GNU General Public License v2.0.
