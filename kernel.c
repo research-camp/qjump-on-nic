@@ -95,7 +95,7 @@ unsigned int hook_func(void *priv, struct sk_buff *skb, const struct nf_hook_sta
     return NF_ACCEPT;
 }
 
-static int __init packet_sniffer_init(void) {
+static int __init qjump_init(void) {
     nfho.hook = hook_func;
     nfho.hooknum = NF_INET_POST_ROUTING;
     nfho.pf = PF_INET;
@@ -107,12 +107,12 @@ static int __init packet_sniffer_init(void) {
     return 0;
 }
 
-static void __exit packet_sniffer_exit(void) {
+static void __exit qjump_exit(void) {
     nf_unregister_net_hook(&init_net, &nfho);
     printk(KERN_INFO "Packet sniffer unloaded.\n");
 }
 
-module_init(packet_sniffer_init);
-module_exit(packet_sniffer_exit);
+module_init(qjump_init);
+module_exit(qjump_exit);
 
 MODULE_LICENSE("GPL");
