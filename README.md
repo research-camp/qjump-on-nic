@@ -9,10 +9,10 @@ Our goal is to create a kernel module to perform this approach on our local syst
 we present this module's code-base. In the next sections we are going to describe this module by presenting 4
 steps that its taking.
 
-## colaborators
+## collaborators
 
-- Amirhossein Najafizadeh (Amirkabir University of Technology)
-- Dr. Seyed Ahmad Javadi (Amirkabir University of Technology)
+- __Amirhossein Najafizadeh__ (Amirkabir University of Technology), research assistant
+- __Dr. Seyed Ahmad Javadi__ (Amirkabir University of Technology), project supervisor
 
 ## project steps
 
