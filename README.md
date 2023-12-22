@@ -9,20 +9,27 @@ Our goal is to create a kernel module to perform this approach on our local syst
 we present this module's code-base. In the next sections we are going to describe this module by presenting 4
 steps that its taking.
 
-## step one (NIC event capturing)
+## colaborators
+
+- Amirhossein Najafizadeh (Amirkabir University of Technology)
+- Dr. Seyed Ahmad Javadi (Amirkabir University of Technology)
+
+## project steps
+
+### step one (NIC event capturing)
 
 The first step is to capture packets that are inserted into NIC queues. We should capture both
 input packets and output packets.
 
-## step two (event management)
+### step two (event management)
 
 Next step is creating a event callback function to be called whenever we capture a packet. This callback
 function gets packet data and decides where it belongs to.
 
-## step three (queue reordering)
+### step three (queue reordering)
 
 After callback function is called, we need to reorder our system's NIC queue.
 
-## step four (system logging)
+### step four (system logging)
 
 In the final step we log these events into a file for debugging and tracing.
